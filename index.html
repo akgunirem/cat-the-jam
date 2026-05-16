@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Cat the Jam</title>
+	<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+	<main class="layout">
+		<section class="panel left-panel">
+			<h1>Cat the Jam</h1>
+			<p id="authStatus">Waiting for authentication...</p>
+			<p id="userInfo">User: -</p>
+			<p id="coalitionInfo">Coalition: -</p>
+			<p id="scoreInfo">Score: 0</p>
+			<p class="hint">Move with arrow keys or WASD.</p>
+			<button id="logoutBtn" type="button">Logout</button>
+		</section>
+
+		<section class="panel game-panel">
+			<canvas id="gameCanvas" width="800" height="600"></canvas>
+		</section>
+
+		<section class="panel right-panel">
+			<h2>Coalition Chat</h2>
+			<div id="chatLog" class="chat-log"></div>
+			<form id="chatForm" class="chat-form">
+				<input id="chatInput" type="text" maxlength="240" placeholder="Type a message" autocomplete="off">
+				<button type="submit">Send</button>
+			</form>
+		</section>
+	</main>
+
+	<script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+	<script src="/game.js"></script>
+</body>
+</html>

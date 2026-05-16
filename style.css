@@ -1,0 +1,122 @@
+:root {
+	--bg: #0b1220;
+	--panel: #111b2e;
+	--panel-2: #0f1729;
+	--text: #e5ecff;
+	--muted: #9db0d5;
+	--accent: #2dd4bf;
+	--danger: #ef4444;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+body {
+	margin: 0;
+	min-height: 100vh;
+	background: radial-gradient(circle at 20% 10%, #1a2f54 0%, #0b1220 45%, #070b14 100%);
+	color: var(--text);
+	font-family: "Segoe UI", Tahoma, sans-serif;
+}
+
+.layout {
+	display: grid;
+	grid-template-columns: 260px minmax(320px, 1fr) 320px;
+	gap: 16px;
+	padding: 16px;
+}
+
+.panel {
+	background: linear-gradient(180deg, var(--panel), var(--panel-2));
+	border: 1px solid #223656;
+	border-radius: 14px;
+	padding: 14px;
+	box-shadow: 0 14px 30px rgba(0, 0, 0, 0.3);
+}
+
+h1, h2 {
+	margin-top: 0;
+}
+
+.hint {
+	color: var(--muted);
+}
+
+#logoutBtn {
+	margin-top: 10px;
+	border: 0;
+	border-radius: 8px;
+	padding: 8px 12px;
+	background: var(--danger);
+	color: #fff;
+	cursor: pointer;
+}
+
+.game-panel {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+#gameCanvas {
+	width: 100%;
+	max-width: 800px;
+	aspect-ratio: 4 / 3;
+	background: #0a1020;
+	border: 1px solid #24395d;
+	border-radius: 12px;
+}
+
+.chat-log {
+	height: 460px;
+	overflow: auto;
+	border: 1px solid #27406a;
+	border-radius: 10px;
+	padding: 10px;
+	background: #0b1326;
+	margin-bottom: 10px;
+}
+
+.chat-msg {
+	margin: 0 0 8px;
+	color: var(--text);
+}
+
+.chat-from {
+	color: var(--accent);
+	font-weight: 600;
+}
+
+.chat-form {
+	display: grid;
+	grid-template-columns: 1fr auto;
+	gap: 8px;
+}
+
+#chatInput {
+	border-radius: 8px;
+	border: 1px solid #2c4675;
+	background: #0b1324;
+	color: var(--text);
+	padding: 8px;
+}
+
+.chat-form button {
+	border: 0;
+	border-radius: 8px;
+	padding: 8px 12px;
+	background: #2563eb;
+	color: #fff;
+	cursor: pointer;
+}
+
+@media (max-width: 1100px) {
+	.layout {
+		grid-template-columns: 1fr;
+	}
+
+	.chat-log {
+		height: 240px;
+	}
+}

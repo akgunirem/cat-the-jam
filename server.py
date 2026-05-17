@@ -5,12 +5,13 @@ import requests
 from flask_socketio import SocketIO, emit, join_room, disconnect
 
 app = Flask(__name__)
-socketio = SocketIO(app, cors_allowed_origins = "*")
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
 players = {}
 coin = {"x": random.randint(0, 800), "y": random.randint(0, 600)}
 
 ITEM_POWER = {'towel': 3, 'cup': 2, 'cardholder': 1}
 ITEM_POOL = [('cardholder', 60), ('cup', 30), ('towel', 10)]
+COALITION_NAMES = ['Gryffindor', 'Slytherin', 'Ravenclaw']
 
 def distance(p1, p2):
     return hypot(p1['x'] - p2['x'], p1['y'] - p2['y'])
@@ -47,18 +48,18 @@ def resolve_combat(att_sid, def_sid):
         # defender'nin eşyasını yok et, attacker puan alır
         B['item'] = None
         A['score'] += 1
-        socketio.emit('combat_result', {"winner": att_sid, "loser": def_sid, "item_removed": True}, broadcast=True)
+        socketio.emit('combat_result', {"winner": att_sid, "loser": def_sid, "item_removed": True})
     elif a_power < b_power:
         A['item'] = None
         B['score'] += 1
-        socketio.emit('combat_result', {"winner": def_sid, "loser": att_sid, "item_removed": True}, broadcast=True)
+        socketio.emit('combat_result', {"winner": def_sid, "loser": att_sid, "item_removed": True})
     else:
         # eşit güç => her ikisi de eşyasını kaybeder
         A['item'] = None
         B['item'] = None
-        socketio.emit('combat_result', {"winner": None, "loser": None, "item_removed": True}, broadcast=True)
+        socketio.emit('combat_result', {"winner": None, "loser": None, "item_removed": True})
 
-def	choose_item():
+def choose_item():
     items, weights = zip(*ITEM_POOL)
     return random.choices(items, weights=weights, k=1)[0]
 
@@ -107,35 +108,39 @@ def handle_auth(data):
     # attach user id to player and assign coalition
     user_id = payload.get('sub') or payload.get('email')
     players[sid]['user'] = user_id
-    coalition = f"coalition_{abs(hash(user_id)) % 3}"
+    # choose a friendly coalition name when possible
+    idx = abs(hash(user_id)) % len(COALITION_NAMES)
+    coalition = COALITION_NAMES[idx]
+    # remove any previous sessions for this same user to avoid duplicates
+    for old_sid in list(players.keys()):
+        if old_sid != sid and players.get(old_sid, {}).get('user') == user_id:
+            try:
+                del players[old_sid]
+            except KeyError:
+                pass
     players[sid]['coalitionId'] = coalition
     join_room('coalition:' + coalition)
     emit('auth_ok', {'user': user_id, 'coalitionId': coalition}, room=sid)
-    socketio.emit('state_update', {"players": players, "coin": coin}, broadcast=True)
+    socketio.emit('state_update', {"players": players, "coin": coin})
 
 @socketio.on('connect')
-def	connection_established():
-	players[request.sid] = {
-		"user": None,
-		"x": 0, "y": 0,
-		"score": 0,
-		"coalitionId": None,
-		"item": None,
-		"alive": True
-		}
-	print(f"A new player has joined: {request.sid}")
-	print(f"Current Players: {players}")
-	emit('state_update', {"players": players, "coin": coin}, broadcast = True)
+def connection_established():
+    # Don't create a full player record until authentication succeeds.
+    # Keep the connect handler lightweight so anonymous placeholders don't appear
+    # in the player list. Authentication will create the player entry.
+    print(f"Socket connected: {request.sid}")
 
 @socketio.on('player_movement')
 def handle_movement(data):
     sid = request.sid
+    print(f"[MOVEMENT] {sid}: {data}")
     p = players.get(sid)
     if not p:
         return
     # clamp pozisyon
     p['x'] = max(0, min(800, data.get('x', p['x'])))
     p['y'] = max(0, min(600, data.get('y', p['y'])))
+    print(f"[MOVEMENT] Updated: x={p['x']}, y={p['y']}")
     # 1) mission point / coin toplama kontrolü (örnek coin)
     if abs(p['x'] - coin['x']) < 20 and abs(p['y'] - coin['y']) < 20:
         # coin toplandı -> ödül ver ve coin yeniden spawnla
@@ -152,15 +157,16 @@ def handle_movement(data):
             resolve_combat(sid, other_sid)
 
     # 3) broadcast güncellemesi
-    emit('state_update', {"players": players, "coin": coin}, broadcast=True)
+    print(f"[STATE_UPDATE] Broadcasting state with {len(players)} players")
+    socketio.emit('state_update', {"players": players, "coin": coin})
 
 @socketio.on('disconnect')
-def	connection_lost():
-	if request.sid in players:
-		del players[request.sid]
-	print(f"One of the players left the server: {request.sid}")
-	print(f"Current Players: {players}")
-	emit('state_update', {"players": players, "coin": coin}, broadcast = True)
+def connection_lost():
+    if request.sid in players:
+        del players[request.sid]
+    print(f"One of the players left the server: {request.sid}")
+    print(f"Current Players: {players}")
+    socketio.emit('state_update', {"players": players, "coin": coin})
 
 
 @socketio.on('coalition_chat')
@@ -187,6 +193,7 @@ def handle_coalition_chat(data):
         'coalition_chat',
         {
             'from': p.get('user') or sid,
+            'sid': sid,
             'coalitionId': coalition,
             'message': text[:240]
         },
@@ -195,5 +202,5 @@ def handle_coalition_chat(data):
 
 
 if __name__ == "__main__":
-	socketio.run(app, host = '0.0.0.0', port = 5000)
+    socketio.run(app, host='0.0.0.0', port=5000)
 

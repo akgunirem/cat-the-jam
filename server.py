@@ -11,7 +11,30 @@ coin = {"x": random.randint(0, 800), "y": random.randint(0, 600)}
 
 ITEM_POWER = {'towel': 3, 'cup': 2, 'cardholder': 1}
 ITEM_POOL = [('cardholder', 60), ('cup', 30), ('towel', 10)]
-COALITION_NAMES = ['Gryffindor', 'Slytherin', 'Ravenclaw']
+COALITION_NAMES = ['Gryffindor', 'Slytherin', 'Ravenclaw', 'Hufflepuff']
+
+# Map 42 cursus names to coalitions (deterministic mapping from Intra data)
+CURSUS_TO_COALITION = {
+    '42 Cursus': 'Gryffindor',
+    'Piscine PHP': 'Slytherin',
+    'Piscine Python': 'Ravenclaw',
+    'Piscine C': 'Hufflepuff',
+    'Piscine Reloaded': 'Gryffindor',
+    'Piscine Go': 'Slytherin',
+    'Piscine Rust': 'Ravenclaw',
+    'Piscine Swift': 'Hufflepuff',
+}
+
+def get_coalition_from_cursus(cursus_name):
+    """Map a 42 cursus name to a coalition, or use hash as fallback."""
+    if cursus_name and cursus_name in CURSUS_TO_COALITION:
+        return CURSUS_TO_COALITION[cursus_name]
+    # Fallback: hash the cursus name or user id
+    if cursus_name:
+        idx = abs(hash(cursus_name)) % len(COALITION_NAMES)
+        return COALITION_NAMES[idx]
+    # Final fallback: random
+    return COALITION_NAMES[0]
 
 def distance(p1, p2):
     return hypot(p1['x'] - p2['x'], p1['y'] - p2['y'])
@@ -108,9 +131,11 @@ def handle_auth(data):
     # attach user id to player and assign coalition
     user_id = payload.get('sub') or payload.get('email')
     players[sid]['user'] = user_id
-    # choose a friendly coalition name when possible
-    idx = abs(hash(user_id)) % len(COALITION_NAMES)
-    coalition = COALITION_NAMES[idx]
+    # Get coalition from cursus (from Intra API) or fallback to hash
+    cursus_name = payload.get('cursus')
+    coalition = get_coalition_from_cursus(cursus_name)
+    print(f"[AUTH] User {user_id} with cursus '{cursus_name}' assigned to {coalition}")
+    players[sid]['coalitionId'] = coalition
     # remove any previous sessions for this same user to avoid duplicates
     for old_sid in list(players.keys()):
         if old_sid != sid and players.get(old_sid, {}).get('user') == user_id:
@@ -118,7 +143,6 @@ def handle_auth(data):
                 del players[old_sid]
             except KeyError:
                 pass
-    players[sid]['coalitionId'] = coalition
     join_room('coalition:' + coalition)
     emit('auth_ok', {'user': user_id, 'coalitionId': coalition}, room=sid)
     socketio.emit('state_update', {"players": players, "coin": coin})

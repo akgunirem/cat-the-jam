@@ -111,11 +111,23 @@ app.get('/auth/42/callback', async (req, res) => {
         const profilePic = userResponse.data.image.link;
         const campus = userResponse.data.campus[0]?.name || "Unknown";
 
+        // Extract primary cursus/coalition from cursus_users
+        let primaryCursus = null;
+        if (userResponse.data.cursus_users && Array.isArray(userResponse.data.cursus_users)) {
+            const activeCursus = userResponse.data.cursus_users.find(c => c.end_at === null) || userResponse.data.cursus_users[0];
+            if (activeCursus && activeCursus.cursus && activeCursus.cursus.name) {
+                primaryCursus = activeCursus.cursus.name;
+            }
+        }
+
+        console.log('User info:', { username, campus, primaryCursus, cursus_users: userResponse.data.cursus_users?.length || 0 });
+
         const token = jwt.sign(
             {
                 sub: username,
                 email,
-                campus
+                campus,
+                cursus: primaryCursus
             },
             JWT_SECRET,
             { expiresIn: '2h' }

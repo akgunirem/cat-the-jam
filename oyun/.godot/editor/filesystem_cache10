@@ -1,8 +1,0 @@
-63f7b34db8d8cdea90c76aacccf841ec
-::res://::1778985693
-cat_the_jam_sprite800.png::CompressedTexture2D::5051973983709670154::1778967255::1778967257::1::::<><><>0<>0<>054666ffbca52ad3e8638052e0c08aff<>res://.godot/imported/cat_the_jam_sprite800.png-d5a956ec989aa1fdcb377b717c231005.ctex::
-cat_the_jam_sprite800_all.png::CompressedTexture2D::3314031903573030771::1778985693::1778985694::1::::<><><>0<>0<>e28cd5c7744ff517fd748fdca3e4c0d3<>res://.godot/imported/cat_the_jam_sprite800_all.png-54df6115ed9393753238ba8e848043eb.ctex::
-cat_the_jam_sprite800_items.png::CompressedTexture2D::2449488660660919185::1778976745::1778976744::1::::<><><>0<>0<>697656ea32feb28f8d3d6e71a10fcc9d<>res://.godot/imported/cat_the_jam_sprite800_items.png-c7a567c2f18756758fea513b1b1fdfff.ctex::
-icon.svg::CompressedTexture2D::5881665793511881237::1778966923::1778966929::1::::<><><>0<>0<>95c862da2f48b6808545872b38157ac6<>res://.godot/imported/icon.svg-218a8f2b3041327d8a5756f3a245f83b.ctex::
-node_2d.tscn::PackedScene::5696613280282714723::1778985164::0::1::::<><><>0<>0<><>::uid://cd8hjkccmwgfy::::res://cat_the_jam_sprite800.png<>uid://b4xdjde1ky5mp::::res://character_body_2d.gd<>uid://cp2ef82gbtq2x::::res://icon.svg<>uid://ba5syq0jo411n::::res://cat_the_jam_sprite800_items.png
-character_body_2d.gd::GDScript::4469576225607789375::1778975291::0::1::::<>CharacterBody2D<><>0<>0<><>::

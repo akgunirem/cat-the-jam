@@ -1,3 +1,0 @@
-◇ injected env (5) from .env // tip: ⌘ multiple files { path: ['.env.local', '.env'] }
-🚀 Game server is up and running: http://localhost:3000
-OAuth config loaded. client_id_prefix=u-s4t2ud-b36..., redirect_uri=http://localhost:3000/auth/42/callback
